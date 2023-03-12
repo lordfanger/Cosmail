@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Cosmail.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Cosmail;
 
@@ -20,6 +21,8 @@ public static class MauiProgram
 		builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();
 #endif
+
+		builder.Services.AddSingleton<MsGraphService>();
 
 		return builder.Build();
 	}
