@@ -1,0 +1,40 @@
+@using Microsoft.Graph
+@using Microsoft.Graph.Models
+
+<h3 style="text-transform: capitalize">@MailboxName</h3>
+@{
+	if (_messages != null)
+	{
+		foreach (var message in _messages)
+		{
+			<MailPreview Message="message"/>
+		}
+	}
+	else
+	{
+		<div>Loading...</div>
+	}
+}
+
+@code
+{
+	private IList<Message>? _messages;
+
+	[Parameter]
+	public string MailboxName { get; set; } = null!;
+
+	[CascadingParameter]
+	public GraphServiceClient GraphServiceClient { get; set; } = null!;
+	
+	/// <inheritdoc />
+	protected override async Task OnParametersSetAsync()
+	{
+		await base.OnParametersSetAsync();
+
+		if ((GraphServiceClient?)GraphServiceClient is null) ArgumentNullException.ThrowIfNull(GraphServiceClient);
+		if ((string?)MailboxName is null) ArgumentNullException.ThrowIfNull(MailboxName);
+
+		var response = await GraphServiceClient.Me.MailFolders[MailboxName].Messages.GetAsync();
+		_messages = response?.Value;
+	}
+}

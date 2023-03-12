@@ -1,0 +1,50 @@
+@using Microsoft.Graph
+@using Microsoft.Graph.Models
+@using System.Web
+
+<div style="display: grid; grid-template-columns: minmax(0, 3fr) repeat(2, minmax(0, 1fr)); border: solid 1px">
+	<div>@Message.Subject</div>
+	<div>From: @Email(Message.From)</div>
+	<div>To: @To()</div>
+	<div style="grid-column: 1/-1; height: 400px; position: relative">
+		@{
+			if (Message.Body?.Content is { } body)
+			{
+				<iframe sandbox="" style="height: 800px; width: 200%; position: absolute; top: -50%; right: -50%; bottom: -50%; left: -50%; transform: scale(0.5); border: none;" src="@WrapMessageBody(body)"></iframe>
+			}
+		}
+	</div>
+</div>
+
+@code {
+
+	[Parameter]
+	public Message Message { get; set; } = null!;
+
+	[CascadingParameter]
+	public GraphServiceClient GraphServiceClient { get; set; } = null!;
+
+	/// <inheritdoc />
+	protected override async Task OnParametersSetAsync()
+	{
+		await base.OnParametersSetAsync();
+
+		if ((GraphServiceClient?)GraphServiceClient is null) ArgumentNullException.ThrowIfNull(GraphServiceClient);
+		if ((Message?)Message is null) ArgumentNullException.ThrowIfNull(Message);
+
+	}
+
+	private RenderFragment To() => Message.ToRecipients switch
+	{
+		null => @<text>-</text>,
+		{ Count: 0 } => @<text>-</text>,
+		[var single] => Email(single),
+		[var first, ..] list => @<text>@Email(first) +@(list.Count - 1)</text>
+	};
+
+	private RenderFragment Email(Recipient? recipient) => @<strong>@recipient?.EmailAddress?.Address</strong>;
+	
+	private static string WrapMessageBody(string body) => $"data:text/html;charset=utf-8,{EncodeHtml(body)}";
+
+	private static string EncodeHtml(string html) => HttpUtility.UrlEncode(html).Replace('+', ' ');
+}
