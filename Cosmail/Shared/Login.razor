@@ -1,0 +1,85 @@
+@using Cosmail.Services
+@using Microsoft.Graph
+@using Azure.Core
+@using Azure.Identity
+@inject MsGraphService MsGraphService
+@inject MauiUiService MauiUiService
+@{
+	if (_graphServiceClient != null)
+	{
+		<div style="display: grid; grid-template-rows: auto minmax(0, 1fr)">
+			<CascadingValue TValue="GraphServiceClient" Value="_graphServiceClient" IsFixed="true">
+				<CascadingValue TValue="MsGraphInfo" Value="_info">
+					@Logged
+				</CascadingValue>
+			</CascadingValue>
+		</div>
+	}
+	else
+	{
+		if (_userCode != null)
+		{
+			<div>User Code: @_userCode</div>
+		}
+		else
+		{
+			<div>Loading...</div>
+		}
+	}
+}
+@code
+{
+	private readonly string[] _scopes = { "user.read", "mail.read", "mail.send" };
+
+	private GraphServiceClient? _graphServiceClient;
+	private MsGraphInfo _info = new();
+	private string? _userCode;
+
+	/// <summary>
+	/// Fragment rendered on succesful login.
+	/// </summary>
+	[Parameter]
+	public RenderFragment? Logged { get; set; }
+
+	/// <inheritdoc />
+	protected override async Task OnInitializedAsync()
+	{
+		WebView? authWebView = null;
+		var deviceCodeCredential = new DeviceCodeCredential(async (deviceCodeInfo, cancellationToken) =>
+		{
+			_userCode = deviceCodeInfo.UserCode;
+			await InvokeAsync(StateHasChanged);
+
+			await MauiUiService.OnMainPage(mainPage =>
+			{
+				var rows = mainPage.Grid.RowDefinitions;
+				rows.Clear();
+				rows.Add(new RowDefinition(30)); // to see User Code
+				rows.Add(new RowDefinition(GridLength.Star));
+
+				var grid = mainPage.Grid;
+				authWebView = new WebView()
+					{
+						Source = deviceCodeInfo.VerificationUri,
+					};
+				grid.Add(authWebView);
+				grid.SetRow(authWebView, 1);
+				grid.SetColumn(authWebView, 0);
+			});
+		}, MsGraphService.TenantId, MsGraphService.ClientId);
+
+		var graphServiceClient = new GraphServiceClient(deviceCodeCredential, _scopes);
+		var tokenResponse = await deviceCodeCredential.GetTokenAsync(new TokenRequestContext(_scopes));
+		_info.ExpiresOn = tokenResponse.ExpiresOn.DateTime;
+		_graphServiceClient = graphServiceClient;
+		await MauiUiService.OnMainPage(mainPage =>
+		{
+			var rows = mainPage.Grid.RowDefinitions;
+			rows.Clear();
+			rows.Add(new RowDefinition(GridLength.Star));
+
+			var grid = mainPage.Grid;
+			grid.Remove(authWebView);
+		});
+	}
+}

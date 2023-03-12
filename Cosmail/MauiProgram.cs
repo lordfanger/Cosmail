@@ -22,6 +22,7 @@ public static class MauiProgram
 		builder.Logging.AddDebug();
 #endif
 
+		builder.Services.AddSingleton<MauiUiService>();
 		builder.Services.AddSingleton<MsGraphService>();
 
 		return builder.Build();

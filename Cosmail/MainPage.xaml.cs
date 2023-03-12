@@ -1,9 +1,14 @@
-﻿namespace Cosmail;
+﻿using Cosmail.Services;
+
+namespace Cosmail;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage()
+	public Grid Grid => grid;
+
+	public MainPage(MauiUiService mauiUiService)
 	{
 		InitializeComponent();
+		mauiUiService.RegisterMainPage(this);
 	}
 }

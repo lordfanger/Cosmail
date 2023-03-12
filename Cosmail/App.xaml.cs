@@ -1,11 +1,13 @@
-﻿namespace Cosmail;
+﻿using Cosmail.Services;
+
+namespace Cosmail;
 
 public partial class App : Application
 {
-	public App()
+	public App(MauiUiService mauiUiService)
 	{
 		InitializeComponent();
 
-		MainPage = new MainPage();
+		MainPage = new MainPage(mauiUiService);
 	}
 }

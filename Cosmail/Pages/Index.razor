@@ -1,3 +1,9 @@
 ﻿@page "/"
 
-TODO
+<div>Expires on: @MsGraphInfo.ExpiresOn</div>
+
+@code
+{
+	[CascadingParameter]
+	public MsGraphInfo MsGraphInfo { get; set; } = null!;
+}
