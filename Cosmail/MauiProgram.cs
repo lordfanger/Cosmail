@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Cosmail.Data;
 
 namespace Cosmail;
 
@@ -21,8 +20,6 @@ public static class MauiProgram
 		builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();
 #endif
-
-		builder.Services.AddSingleton<WeatherForecastService>();
 
 		return builder.Build();
 	}
