@@ -2,8 +2,15 @@
 
 namespace Cosmail.Services;
 
+/// <summary>
+/// Service for Microsoft Graph settings.
+/// </summary>
 public class MsGraphService
 {
+	/// <summary>
+	/// Constructor.
+	/// </summary>
+	/// <exception cref="Exception">Required settings not found.</exception>
 	public MsGraphService()
 	{
 		// Load settings
@@ -23,8 +30,14 @@ public class MsGraphService
 		TenantId = settings.TenantId;
 	}
 
+	/// <summary>
+	/// Client id.
+	/// </summary>
 	public string ClientId { get; }
 
+	/// <summary>
+	/// Tenant id.
+	/// </summary>
 	public string TenantId { get; }
 }
 

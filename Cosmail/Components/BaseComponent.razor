@@ -1,0 +1,13 @@
+@using Microsoft.Graph.Models
+
+@code {
+	protected RenderFragment EmailList(IList<Recipient>? recipients) => recipients switch
+	{
+		null => @<text>-</text>,
+		{ Count: 0 } => @<text>-</text>,
+		[var single] => Email(single),
+		[var first, ..] list => @<text>@Email(first) +@(list.Count - 1)</text>
+	};
+
+	protected RenderFragment Email(Recipient? recipient) => @<strong>@recipient?.EmailAddress?.Address</strong>;
+}

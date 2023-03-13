@@ -1,7 +1,7 @@
 @using Microsoft.Graph
 @using Microsoft.Graph.Models
 
-<h3 style="text-transform: capitalize">@MailboxName</h3>
+<h3 style="text-transform: capitalize">@MailboxId</h3>
 @{
 	if (_messages != null)
 	{
@@ -22,9 +22,15 @@
 {
 	private IList<Message>? _messages;
 
+	/// <summary>
+	/// Mailbox id to show messages.
+	/// </summary>
 	[Parameter]
-	public string MailboxName { get; set; } = null!;
+	public string MailboxId { get; set; } = null!;
 
+	/// <summary>
+	/// Microsoft Graph API Service.
+	/// </summary>
 	[CascadingParameter]
 	public GraphServiceClient GraphServiceClient { get; set; } = null!;
 
@@ -34,9 +40,9 @@
 		await base.OnParametersSetAsync();
 
 		if ((GraphServiceClient?)GraphServiceClient is null) ArgumentNullException.ThrowIfNull(GraphServiceClient);
-		if ((string?)MailboxName is null) ArgumentNullException.ThrowIfNull(MailboxName);
+		if ((string?)MailboxId is null) ArgumentNullException.ThrowIfNull(MailboxId);
 
-		var response = await GraphServiceClient.Me.MailFolders[MailboxName].Messages.GetAsync();
+		var response = await GraphServiceClient.Me.MailFolders[MailboxId].Messages.GetAsync();
 		_messages = response?.Value;
 	}
 }

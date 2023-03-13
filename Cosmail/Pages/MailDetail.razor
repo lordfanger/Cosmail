@@ -1,6 +1,7 @@
 @page "/mail/{messageId}"
 @using Microsoft.Graph
 @using Microsoft.Graph.Models
+@inherits BaseComponent
 
 @{
 	if (_message != null)
@@ -8,7 +9,7 @@
 		<div style="display: grid; width: 100%; height: 100%; grid-template-rows: auto auto auto 1fr">
 			<div>@_message.Subject</div>
 			<div>From: @Email(_message.From)</div>
-			<div>To: @To()</div>
+			<div>To: @EmailList(_message.ToRecipients)</div>
 			@{
 				if (_message.Body?.Content is { } body)
 				{
@@ -16,16 +17,21 @@
 				}
 			}
 		</div>
-
 	}
 }
 
 @code {
 	private Message? _message;
 
+	/// <summary>
+	/// Mail id.
+	/// </summary>
 	[Parameter]
 	public string MessageId { get; set; } = null!;
 
+	/// <summary>
+	/// Microsoft Graph API Service.
+	/// </summary>
 	[CascadingParameter]
 	public GraphServiceClient GraphServiceClient { get; set; } = null!;
 
@@ -40,15 +46,4 @@
 		var response = await GraphServiceClient.Me.Messages[MessageId].GetAsync();
 		_message = response;
 	}
-
-	private RenderFragment To() => _message?.ToRecipients switch
-	{
-		null => @<text>-</text>,
-		{ Count: 0 } => @<text>-</text>,
-		[var single] => Email(single),
-		[var first, ..] list => @<text>@Email(first) +@(list.Count - 1)</text>
-	};
-
-	private RenderFragment Email(Recipient? recipient) => @<strong>@recipient?.EmailAddress?.Address</strong>;
-
 }

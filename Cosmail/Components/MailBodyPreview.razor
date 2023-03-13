@@ -1,20 +1,36 @@
 @using System.Web
 @using System.Text
 @using System.Globalization
+@using Cosmail.Helper
 <div style="@GetDivStyle()">
-	<iframe sandbox="" style="@GetIframeStyle()" src="@WrapMessageBody(Body)"></iframe>
+	<iframe sandbox="" style="@GetIframeStyle()" src="@IframeHelper.HtmlToSrc(Body)"></iframe>
 </div>
 
 @code {
+	/// <summary>
+	/// HTML email body.
+	/// </summary>
 	[Parameter]
 	public string Body { get; set; } = null!;
 
+	/// <summary>
+	/// Width to be rendered for. <br />
+	/// Defaults to 100%.
+	/// </summary>
 	[Parameter]
 	public string Width { get; set; } = "100%";
 
+	/// <summary>
+	/// Height to be rendered for. <br />
+	/// Defaults to 100%.
+	/// </summary>
 	[Parameter]
 	public string Height { get; set; } = "100%";
 
+	/// <summary>
+	/// Zoom used for &lt;iframe&gt;.<br />
+	/// If <see langword="null"/> no transformation is performed.
+	/// </summary>
 	[Parameter]
 	public double? Zoom { get; set; }
 
@@ -43,8 +59,4 @@
 		sb.Append($"transform: scale({zoom.ToString(invariantCulture)})");
 		return sb.ToString();
 	}
-
-	private static string WrapMessageBody(string body) => $"data:text/html;charset=utf-8,{EncodeHtml(body)}";
-
-	private static string EncodeHtml(string html) => HttpUtility.UrlEncode(html).Replace('+', ' ');
 }
