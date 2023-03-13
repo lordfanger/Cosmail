@@ -7,7 +7,9 @@
 	{
 		foreach (var message in _messages)
 		{
-			<MailPreview Message="message"/>
+			<a href="@($"/mail/{message.Id}")">
+				<MailPreview Message="message" />
+			</a>
 		}
 	}
 	else
@@ -25,7 +27,7 @@
 
 	[CascadingParameter]
 	public GraphServiceClient GraphServiceClient { get; set; } = null!;
-	
+
 	/// <inheritdoc />
 	protected override async Task OnParametersSetAsync()
 	{

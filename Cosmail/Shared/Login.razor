@@ -7,13 +7,11 @@
 @{
 	if (_graphServiceClient != null)
 	{
-		<div style="display: grid; grid-template-rows: auto minmax(0, 1fr)">
-			<CascadingValue TValue="GraphServiceClient" Value="_graphServiceClient" IsFixed="true">
-				<CascadingValue TValue="MsGraphInfo" Value="_info">
-					@Logged
-				</CascadingValue>
+		<CascadingValue TValue="GraphServiceClient" Value="_graphServiceClient" IsFixed="true">
+			<CascadingValue TValue="MsGraphInfo" Value="_info">
+				@Logged
 			</CascadingValue>
-		</div>
+		</CascadingValue>
 	}
 	else
 	{

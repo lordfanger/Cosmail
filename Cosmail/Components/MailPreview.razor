@@ -10,7 +10,7 @@
 		@{
 			if (Message.Body?.Content is { } body)
 			{
-				<iframe sandbox="" style="height: 800px; width: 200%; position: absolute; top: -50%; right: -50%; bottom: -50%; left: -50%; transform: scale(0.5); border: none;" src="@WrapMessageBody(body)"></iframe>
+				<MailBodyPreview Body="@body" Width="100%" Height="400px" Zoom="0.5" />
 			}
 		}
 	</div>

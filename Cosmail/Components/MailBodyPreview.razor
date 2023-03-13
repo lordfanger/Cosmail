@@ -1,0 +1,50 @@
+@using System.Web
+@using System.Text
+@using System.Globalization
+<div style="@GetDivStyle()">
+	<iframe sandbox="" style="@GetIframeStyle()" src="@WrapMessageBody(Body)"></iframe>
+</div>
+
+@code {
+	[Parameter]
+	public string Body { get; set; } = null!;
+
+	[Parameter]
+	public string Width { get; set; } = "100%";
+
+	[Parameter]
+	public string Height { get; set; } = "100%";
+
+	[Parameter]
+	public double? Zoom { get; set; }
+
+	/// <inheritdoc />
+	protected override async Task OnParametersSetAsync()
+	{
+		await base.OnParametersSetAsync();
+		if ((string?)Body is null) ArgumentNullException.ThrowIfNull(Body);
+	}
+
+	private string GetDivStyle() => $"position: relative; width: {Width}; height: {Height}";
+	
+	private string GetIframeStyle()
+	{
+		if (Zoom is not { } zoom || zoom == 0) return "width: 100%; height: 100%; position: absolute; top: 0; right: 0; bottom: 0; right: 0";
+
+		var invariantCulture = CultureInfo.InvariantCulture;
+		var sb = new StringBuilder();
+		sb.Append($"width: calc(100% * {(1 / zoom).ToString(invariantCulture)});");
+		sb.Append($"height: calc(100% * {(1 / zoom).ToString(invariantCulture)});");
+		sb.Append("position: absolute;");
+		sb.Append($"top: calc((100% - (100% * {(1 / zoom).ToString(invariantCulture)})) / 2);");
+		sb.Append($"right: calc((100% - (100% * {(1 / zoom).ToString(invariantCulture)})) / 2);");
+		sb.Append($"bottom: calc((100% - (100% * {(1 / zoom).ToString(invariantCulture)})) / 2);");
+		sb.Append($"left: calc((100% - (100% * {(1 / zoom).ToString(invariantCulture)})) / 2);");
+		sb.Append($"transform: scale({zoom.ToString(invariantCulture)})");
+		return sb.ToString();
+	}
+
+	private static string WrapMessageBody(string body) => $"data:text/html;charset=utf-8,{EncodeHtml(body)}";
+
+	private static string EncodeHtml(string html) => HttpUtility.UrlEncode(html).Replace('+', ' ');
+}
