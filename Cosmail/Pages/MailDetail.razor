@@ -1,27 +1,50 @@
 @page "/mail/{messageId}"
 @using Microsoft.Graph
 @using Microsoft.Graph.Models
+@using System.Text.RegularExpressions
 @inherits BaseComponent
 
 @{
 	if (_message != null)
 	{
-		<div style="display: grid; width: 100%; height: 100%; grid-template-rows: auto auto auto 1fr">
-			<div>@_message.Subject</div>
-			<div>From: @Email(_message.From)</div>
-			<div>To: @EmailList(_message.ToRecipients)</div>
-			@{
-				if (_message.Body?.Content is { } body)
-				{
-					<MailBodyPreview Body="@body" Width="100%" Height="100%" Zoom="null" />
+		<div style="display: grid; width: 100%; height: 100%; grid-template-rows: auto 1fr">
+			<div>
+				<div>@_message.Subject</div>
+				<div>From: @Email(_message.From)</div>
+				<div>To: @EmailList(_message.ToRecipients)</div>
+				@{
+					if (!_reply)
+					{
+						<div><button @onclick="Reply">Reply</button></div>
+					}
 				}
-			}
+			</div>
+			<div style="@(_reply ? "display: grid; grid-template-rows: 1fr 1fr" : "display: grid; grid-template-rows: 1fr")">
+				@{
+					if (_message.Body?.Content is { } body)
+					{
+						<div><MailBodyPreview Body="@body" Width="100%" Height="100%" Zoom="null" /></div>
+					}
+					else
+					{
+						<div></div>
+					}
+
+					if (_reply)
+					{
+						<div>
+							<SendMail To="@ReplyTo()" Subject="@ReplySubject()" Body="@ReplyBody()" />
+						</div>
+					}
+				}
+			</div>
 		</div>
 	}
 }
 
 @code {
 	private Message? _message;
+	private bool _reply = false;
 
 	/// <summary>
 	/// Mail id.
@@ -46,4 +69,16 @@
 		var response = await GraphServiceClient.Me.Messages[MessageId].GetAsync();
 		_message = response;
 	}
+
+	private void Reply()
+	{
+		_reply = true;
+	}
+
+	private string ReplyTo() => _message?.From?.EmailAddress?.Address ?? "";
+
+	private string ReplySubject() => $"Re: {Regex.Replace(_message?.Subject ?? "", @"^(re\:\s*)*", "", RegexOptions.IgnoreCase)}";
+
+	private string ReplyBody() => _message?.BodyPreview is { } body ? $"<br /><br />&gt; {Regex.Replace(body, @"(\r\n|\r|\n)", "$0<br />&gt; ")}" : "";
+
 }

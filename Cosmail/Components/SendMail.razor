@@ -1,0 +1,76 @@
+@using Microsoft.Graph
+@using Microsoft.Graph.Me.SendMail
+@using Microsoft.Graph.Models
+
+@{
+	if (_sent)
+	{
+		<div>Sent</div>
+	}
+	else
+	{
+		<div style="width: 100%; height: 100%; display: grid; grid-template-rows: auto 1fr auto">
+			<div>
+				<div>To: <input type="email" @bind="To" /></div>
+				<div>Subject: <input type="text" @bind="Subject" /></div>
+			</div>
+			<textarea @bind="Body"></textarea>
+			<div>
+				<button @onclick="Send">Send</button>
+			</div>
+		</div>
+	}
+}
+
+@code
+{
+	private bool _sent;
+
+	/// <summary>
+	/// Recipient.
+	/// </summary>
+	[Parameter]
+	public string? To { get; set; }
+
+	/// <summary>
+	/// Subject.
+	/// </summary>
+	[Parameter]
+	public string? Subject { get; set; }
+
+	/// <summary>
+	/// Email body html.
+	/// </summary>
+	[Parameter]
+	public string? Body { get; set; }
+
+	/// <summary>
+	/// Microsoft Graph API Service.
+	/// </summary>
+	[CascadingParameter]
+	public GraphServiceClient GraphServiceClient { get; set; } = null!;
+
+	/// <inheritdoc />
+	protected override async Task OnParametersSetAsync()
+	{
+		await base.OnParametersSetAsync();
+
+		if ((GraphServiceClient?)GraphServiceClient is null) ArgumentNullException.ThrowIfNull(GraphServiceClient);
+	}
+
+	private async Task Send()
+	{
+		var message = new Message
+			{
+				ToRecipients = new List<Recipient> { new() { EmailAddress = new EmailAddress { Address = To } } },
+				Subject = Subject,
+				Body = new ItemBody { Content = Body }
+			};
+		var sendMailPostRequestBody = new SendMailPostRequestBody
+			{
+				Message = message
+			};
+		await GraphServiceClient.Me.SendMail.PostAsync(sendMailPostRequestBody);
+		_sent = true;
+	}
+}
